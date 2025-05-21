@@ -4,7 +4,6 @@ from random import randint
 from app.AWSConnections import AWSConnections
 from time import time
 
-
 API_KEY = "dc66e9efc2ec4234a259b73530453cdb"
 
 aws = AWSConnections()
@@ -17,14 +16,12 @@ def saveUserDynamoDB(session, user):
     response = table.put_item(Item=user)
     return response
 
-# Guardar en la tabla Inversiones
 def saveInversionDynamoDB(session, inversion):
     dynamodb = session.resource('dynamodb')
     table = dynamodb.Table('Inversiones')
     response = table.put_item(Item=inversion)
     return response
 
-# Obtener precio actual desde Twelve Data
 def obtener_precio_accion(simbolo):
     url = f"https://api.twelvedata.com/price?symbol={simbolo}&apikey={API_KEY}"
     response = requests.get(url)
@@ -35,7 +32,6 @@ def obtener_precio_accion(simbolo):
         print("No se pudo obtener el precio de la acción:", data)
         return None
 
-# Menú principal
 def menu():
     print("=== Registro de Inversión ===")
 
@@ -62,7 +58,6 @@ def menu():
         except ValueError:
             print("Edad inválida. Debe ser un número.")
 
-    
     usuario = {
         "email": email,
         "name": nombre,
@@ -104,7 +99,6 @@ def menu():
         except ValueError:
             print("Debe ingresar un número válido.")
 
-    
     precio_actual = obtener_precio_accion(accion_elegida)
     if precio_actual is None:
         print("No se puede continuar sin conocer el precio de la acción.")
@@ -112,12 +106,12 @@ def menu():
 
     cantidad_acciones = round(monto_invertir / precio_actual, 2)
 
-    print(f"\nPrecio actual de {accion_elegida}: ${precio_actual}")
+    print(f"Precio actual de {accion_elegida}: ${precio_actual}")
     print(f"Con Q{monto_invertir} puedes comprar aproximadamente {cantidad_acciones} acciones.")
 
     
     inversion = {
-        "Inversiones": int(time()),
+        "inversion": str(int(time())), 
         "email": email,
         "name": nombre,
         "age": edad,
@@ -128,14 +122,14 @@ def menu():
         "acciones_compradas": Decimal(str(cantidad_acciones))
     }
 
-    print("DEBUG - OBJETO A GUARDAR:")
+    print(" OBJETO A GUARDAR:")
     print(inversion)
 
     respuesta = saveInversionDynamoDB(awsSession, inversion)
     print("¡Inversión guardada exitosamente en DynamoDB!")
     print("Respuesta de AWS:", respuesta)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     menu()
 
