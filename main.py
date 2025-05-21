@@ -93,7 +93,6 @@ def menu():
     print("Acciones disponibles:")
     for i, accion in enumerate(acciones_disponibles, 1):
         print(f"{i}. {accion}")
-
     while True:
         try:
             opcion = int(input("Elige el número de la acción que deseas comprar: "))
