@@ -16,14 +16,14 @@ def saveUserDynamoDB(session, user):
     response = table.put_item(Item=user)
     return response
 
-def saveInversionDynamoDB(session, inversion):
+def saveInvestmentDynamoDB(session, investment):
     dynamodb = session.resource('dynamodb')
     table = dynamodb.Table('Inversiones')
-    response = table.put_item(Item=inversion)
+    response = table.put_item(Item=investment)
     return response
 
-def obtener_precio_accion(simbolo):
-    url = f"https://api.twelvedata.com/price?symbol={simbolo}&apikey={API_KEY}"
+def get_action_price(symbol):
+    url = f"https://api.twelvedata.com/price?symbol={symbol}&apikey={API_KEY}"
     response = requests.get(url)
     data = response.json()
     if "price" in data:
@@ -42,92 +42,92 @@ def menu():
         else:
             print("El correo debe ser de Gmail. Intente de nuevo.")
 
-    nombre = input("Ingrese su nombre: ")
+    name = input("Ingrese su nombre: ")
 
     while True:
-        identificacion = input("Ingrese su número de identificación (UUID o DPI): ")
-        if identificacion.strip():
+        identification = input("Ingrese su número de identificación (UUID o DPI): ")
+        if identification.strip():
             break
         else:
             print("Debe ingresar un número de identificación válido.")
 
     while True:
         try:
-            edad = int(input("Ingrese su edad: "))
+            age = int(input("Ingrese su edad: "))
             break
         except ValueError:
             print("Edad inválida. Debe ser un número.")
 
     usuario = {
         "email": email,
-        "name": nombre,
-        "age": edad,
-        "identificacion": identificacion
+        "name": name,
+        "age": age,
+        "identificacion": identification
     }
     saveUserDynamoDB(awsSession, usuario)
 
     # Datos de inversión
     while True:
         try:
-            monto_total = float(input("¿Con cuánto dinero cuentas en total? Q: "))
+            total_amount = float(input("¿Con cuánto dinero cuentas en total? Q: "))
             break
         except ValueError:
             print("Debe ingresar un número válido.")
 
     while True:
         try:
-            monto_invertir = float(input("¿Cuánto deseas invertir? Q: "))
-            if monto_invertir > monto_total:
+            investment_amount = float(input("¿Cuánto deseas invertir? Q: "))
+            if investment_amount > total_amount:
                 print("No puedes invertir más de lo que tienes.")
             else:
                 break
         except ValueError:
             print("Debe ingresar un número válido.")
 
-    acciones_disponibles = ["AAPL", "GOOGL", "MSFT", "AMZN", "TSLA"]
+    available_actions = ["AAPL", "GOOGL", "MSFT", "AMZN", "TSLA"]
     print("Acciones disponibles:")
-    for i, accion in enumerate(acciones_disponibles, 1):
-        print(f"{i}. {accion}")
+    for i, action in enumerate(available_actions, 1):
+        print(f"{i}. {action}")
     while True:
         try:
-            opcion = int(input("Elige el número de la acción que deseas comprar: "))
-            if 1 <= opcion <= len(acciones_disponibles):
-                accion_elegida = acciones_disponibles[opcion - 1]
+            option = int(input("Elige el número de la acción que deseas comprar: "))
+            if 1 <= option <= len(available_actions):
+                chosen_action = available_actions[option - 1]
                 break
             else:
                 print("Opción inválida. Intente de nuevo.")
         except ValueError:
             print("Debe ingresar un número válido.")
 
-    precio_actual = obtener_precio_accion(accion_elegida)
-    if precio_actual is None:
+    current_price = get_action_price(chosen_action)
+    if current_price is None:
         print("No se puede continuar sin conocer el precio de la acción.")
         return
 
-    cantidad_acciones = round(monto_invertir / precio_actual, 2)
+    actions_amount = round(investment_amount / current_price, 2)
 
-    print(f"Precio actual de {accion_elegida}: ${precio_actual}")
-    print(f"Con Q{monto_invertir} puedes comprar aproximadamente {cantidad_acciones} acciones.")
+    print(f"Precio actual de {chosen_action}: ${current_price}")
+    print(f"Con Q{investment_amount} puedes comprar aproximadamente {actions_amount} acciones.")
 
     
-    inversion = {
+    investment = {
         "inversion": str(int(time())), 
         "email": email,
-        "name": nombre,
-        "age": edad,
-        "monto_total": Decimal(str(monto_total)),
-        "monto_invertido": Decimal(str(monto_invertir)),
-        "accion": accion_elegida,
-        "precio_unitario": Decimal(str(precio_actual)),
-        "acciones_compradas": Decimal(str(cantidad_acciones))
+        "name": name,
+        "age": age,
+        "monto_total": Decimal(str(total_amount)),
+        "monto_invertido": Decimal(str(investment_amount)),
+        "accion": chosen_action,
+        "precio_unitario": Decimal(str(current_price)),
+        "acciones_compradas": Decimal(str(actions_amount))
     }
 
     print(" OBJETO A GUARDAR:")
-    print(inversion)
+    print(investment)
 
-    respuesta = saveInversionDynamoDB(awsSession, inversion)
+    response = saveInvestmentDynamoDB(awsSession, investment)
     print("¡Inversión guardada exitosamente en DynamoDB!")
-    print("Respuesta de AWS:", respuesta)
+    print("Respuesta de AWS:", response)
 
 
 if __name__ == "__main__":
