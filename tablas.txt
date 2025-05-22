@@ -1,0 +1,8 @@
+En esta archivo se dará a conocer que información se coloca en las tablas 
+
+Tabla Usuarios:
+Se coloca el Correo, edad, su DPI, y el nombre de la persona que vamos a identificar.
+
+Tabla Inversiones:
+Se coloca el No. de Inversión, edad, nuevamente el Correo, ¿cuánto dinero has invertido?, nombre, acciones adquiridas,
+el stock(organizacion en la que invertiste), tu inversión inicial, el precio unitario te lo genera el programa.
